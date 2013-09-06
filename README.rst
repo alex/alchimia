@@ -3,7 +3,7 @@ alchimia
 
 ``alchimia`` lets you use most of the SQLAlchemy-core API with Twisted.
 
-Getting starter
+Getting started
 ---------------
 
 .. code:: python
