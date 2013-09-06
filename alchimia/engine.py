@@ -55,5 +55,8 @@ class TwistedResultProxy(object):
         self._result_proxy = result_proxy
         self._engine = engine
 
+    def fetchone(self):
+        return self._engine._defer_to_thread(self._result_proxy.fetchone)
+
     def scalar(self):
         return self._engine._defer_to_thread(self._result_proxy.scalar)

@@ -1,4 +1,5 @@
 import sqlalchemy
+from sqlalchemy.engine import RowProxy
 
 from twisted.trial import unittest
 
@@ -36,3 +37,12 @@ class TestConnection(unittest.TestCase):
         result = self.successResultOf(d)
         d = result.scalar()
         assert self.successResultOf(d) == 42
+
+    def test_fetchone(self):
+        engine = create_engine()
+        d = engine.execute("SELECT 42")
+        result = self.successResultOf(d)
+        d = result.fetchone()
+        row = self.successResultOf(d)
+        assert isinstance(row, RowProxy)
+        assert row[0] == 42
