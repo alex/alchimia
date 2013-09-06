@@ -36,8 +36,24 @@ class TwistedEngine(object):
         d.addCallback(TwistedConnection)
         return d
 
+    def execute(self, *args, **kwargs):
+        d = self._defer_to_thread(self._engine.execute, *args, **kwargs)
+        d.addCallback(TwistedResultProxy, self)
+        return d
+
+
 
 class TwistedConnection(object):
     def __init__(self, connection):
         super(TwistedConnection, self).__init__()
         self._connection = connection
+
+
+class TwistedResultProxy(object):
+    def __init__(self, result_proxy, engine):
+        super(TwistedResultProxy, self).__init__()
+        self._result_proxy = result_proxy
+        self._engine = engine
+
+    def scalar(self):
+        return self._engine._defer_to_thread(self._result_proxy.scalar)
