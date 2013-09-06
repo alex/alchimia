@@ -43,9 +43,9 @@ Getting started
         yield engine.execute(users.insert().values(name="Casey McCall"))
         yield engine.execute(users.insert().values(name="Dana Whitaker"))
 
-        # Let's query for the answer to life, the universe, and everything
         result = yield engine.execute(users.select(users.c.name.startswith("D")))
         d_users = yield result.fetchall()
+        # Print out the users
         for user in d_users:
             print "Username: %s" % user[users.c.name]
 
