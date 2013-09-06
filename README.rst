@@ -12,17 +12,15 @@ Getting started
 
     from sqlalchemy import create_engine
 
+    from twisted.internet.defer import inlineCallbacks
 
 
+    @inlineCallbacks
     def main(reactor):
         engine = create_engine("sqlite://", reactor=reactor, strategy="twisted")
         # Let's query for the answer to life, the universe, and everything
-        d = engine.execute("SELECT 42")
-        d.addCallback(lambda result: result.scalar())
-        d.addCallback(print_result)
-
-    def print_result(result):
-        print "The answer to life, the universe, and everythign is: %s" % result
+        result = yield engine.execute("SELECT 42")
+        print("The answer to life, the universe, and everythign is: %s" % (yield result.scalar()))
 
 
 Limitations
