@@ -47,3 +47,12 @@ class TestConnection(unittest.TestCase):
         row = self.successResultOf(d)
         assert isinstance(row, RowProxy)
         assert row[0] == 42
+
+    def test_fetchall(self):
+        engine = create_engine()
+        d = engine.execute("SELECT 10")
+        result = self.successResultOf(d)
+        d = result.fetchall()
+        rows = self.successResultOf(d)
+        assert len(rows) == 1
+        assert rows[0][0] == 10
