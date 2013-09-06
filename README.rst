@@ -13,6 +13,7 @@ Getting started
     from sqlalchemy import create_engine
 
     from twisted.internet.defer import inlineCallbacks
+    from twisted.internet.task import react
 
 
     @inlineCallbacks
@@ -22,6 +23,9 @@ Getting started
         result = yield engine.execute("SELECT 42")
         answer = yield result.scalar()
         print("The answer to life, the universe, and everything is: %s" % answer
+
+    if __name__ == "__main__":
+        react(main, [])
 
 
 Limitations
