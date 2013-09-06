@@ -53,6 +53,14 @@ Getting started
         react(main, [])
 
 
+Get the code
+------------
+
+We're on `github`_. Fork us!
+
+.. _`github`: https://github.com/alex/alchimia
+
+
 Contents
 --------
 
