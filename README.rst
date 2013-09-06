@@ -23,7 +23,7 @@ Getting started
         # Let's query for the answer to life, the universe, and everything
         result = yield engine.execute("SELECT 42")
         answer = yield result.scalar()
-        print("The answer to life, the universe, and everything is: %s" % answer
+        print("The answer to life, the universe, and everything is: %s" % answer)
 
     if __name__ == "__main__":
         react(main, [])
