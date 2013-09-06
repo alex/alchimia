@@ -9,7 +9,7 @@ Getting started
 
 .. code:: python
 
-    import alchimia
+    from alchimia import TWISTED_STRATEGY
 
     from sqlalchemy import create_engine
 
@@ -19,7 +19,9 @@ Getting started
 
     @inlineCallbacks
     def main(reactor):
-        engine = create_engine("sqlite://", reactor=reactor, strategy="twisted")
+        engine = create_engine(
+            "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
+        )
         # Let's query for the answer to life, the universe, and everything
         result = yield engine.execute("SELECT 42")
         answer = yield result.scalar()

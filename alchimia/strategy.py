@@ -3,6 +3,8 @@ from sqlalchemy.engine.strategies import DefaultEngineStrategy
 from alchimia.engine import TwistedEngine
 
 
+TWISTED_STRATEGY = "_twisted"
+
 class TwistedEngineStrategy(DefaultEngineStrategy):
     """
     An EngineStrategy for use with Twisted. Many of the Engine's methods will
@@ -10,5 +12,5 @@ class TwistedEngineStrategy(DefaultEngineStrategy):
     ``TwistedEngine`` for more details.
     """
 
-    name = "twisted"
+    name = TWISTED_STRATEGY
     engine_cls = TwistedEngine

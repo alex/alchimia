@@ -3,6 +3,7 @@ from sqlalchemy.engine import RowProxy
 
 from twisted.trial import unittest
 
+from alchimia import TWISTED_STRATEGY
 from alchimia.engine import TwistedEngine, TwistedConnection
 
 from .doubles import FakeThreadedReactor
@@ -10,14 +11,14 @@ from .doubles import FakeThreadedReactor
 
 def create_engine():
     return sqlalchemy.create_engine(
-        "sqlite://", strategy="twisted", reactor=FakeThreadedReactor()
+        "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor()
     )
 
 
 class TestEngineCreation(object):
     def test_simple_create_engine(self):
         engine = sqlalchemy.create_engine(
-            "sqlite://", strategy="twisted", reactor=FakeThreadedReactor()
+            "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor()
         )
         assert isinstance(engine, TwistedEngine)
 
