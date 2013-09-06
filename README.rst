@@ -20,7 +20,8 @@ Getting started
         engine = create_engine("sqlite://", reactor=reactor, strategy="twisted")
         # Let's query for the answer to life, the universe, and everything
         result = yield engine.execute("SELECT 42")
-        print("The answer to life, the universe, and everythign is: %s" % (yield result.scalar()))
+        answer = yield result.scalar()
+        print("The answer to life, the universe, and everything is: %s" % answer
 
 
 Limitations
