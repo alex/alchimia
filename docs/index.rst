@@ -9,6 +9,7 @@ Getting started
 
 .. code:: python
 
+    # Import alchimia, this is needed for it register itself with SQLAlchemy
     import alchimia
 
     from sqlalchemy import create_engine
@@ -19,6 +20,8 @@ Getting started
 
     @inlineCallbacks
     def main(reactor):
+        # The important parts here are ``reactor=reactor`` and
+        # ``strategy="twisted"``
         engine = create_engine("sqlite://", reactor=reactor, strategy="twisted")
         # Let's query for the answer to life, the universe, and everything
         result = yield engine.execute("SELECT 42")
