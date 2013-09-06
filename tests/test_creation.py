@@ -18,7 +18,9 @@ def create_engine():
 class TestEngineCreation(object):
     def test_simple_create_engine(self):
         engine = sqlalchemy.create_engine(
-            "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor()
+            "sqlite://",
+            strategy=TWISTED_STRATEGY,
+            reactor=FakeThreadedReactor()
         )
         assert isinstance(engine, TwistedEngine)
 

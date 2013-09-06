@@ -42,7 +42,6 @@ class TwistedEngine(object):
         return d
 
 
-
 class TwistedConnection(object):
     def __init__(self, connection):
         super(TwistedConnection, self).__init__()
