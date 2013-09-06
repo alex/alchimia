@@ -3,8 +3,9 @@ DDL
 
 Because of some of the limitations in the SQLAlchemy API, it's not possible to
 create tables using :py:meth:`sqlalchemy.schema.Table.create` or
-:py:meth:`sqlalchemy.MetaData.create_all`. Luckily, SQLAlchemy provides an API
-that still makes it possible to create tables and perform other DDL operations.
+:py:meth:`sqlalchemy.schema.MetaData.create_all`. Luckily, SQLAlchemy provides
+an API that still makes it possible to create tables and perform other DDL
+operations.
 
 Instead of:
 
