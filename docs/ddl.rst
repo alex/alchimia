@@ -24,7 +24,7 @@ or
 
     metadata.create_all()
 
-You can use:
+You can use :py:class:`sqlalchemy.schema.CreateTable`:
 
 .. code-block:: python
 
