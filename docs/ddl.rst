@@ -8,7 +8,7 @@ that still makes it possible to create tables and perform other DDL operations.
 
 Instead of:
 
-.. code:: python
+.. code-block:: python
 
     users = Table("users", metadata,
         Column("id", Integer(), primary_key=True),
@@ -19,13 +19,13 @@ Instead of:
 
 or
 
-.. code:: python
+.. code-block:: python
 
     metadata.create_all()
 
 You can use:
 
-.. code:: python
+.. code-block:: python
 
     from sqlalchemy.schema import CreateTable
 

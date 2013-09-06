@@ -7,7 +7,7 @@ not allow you to use the ORM.
 Getting started
 ---------------
 
-.. code:: python
+.. code-block:: python
 
     # Import alchimia, this is needed for it register itself with SQLAlchemy
     import alchimia
