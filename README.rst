@@ -1,7 +1,8 @@
 alchimia
 ========
 
-``alchimia`` lets you use most of the SQLAlchemy-core API with Twisted.
+``alchimia`` lets you use most of the SQLAlchemy-core API with Twisted, it does
+not allow you to use the ORM.
 
 Getting started
 ---------------
