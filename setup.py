@@ -14,11 +14,15 @@
 from setuptools import setup, find_packages
 
 
+with open("README.rst") as f:
+    long_description = f.read()
+
 setup(
     name="alchimia",
-    version="0.1-dev",
+    version="0.2-dev",
 
     description="(SQLAlchemy - ORM) + Twisted = win",
+    long_description=long_description,
     license="MIT",
     url="https://github.com/alex/alchimia",
 
