@@ -51,6 +51,12 @@ Getting started
     if __name__ == "__main__":
         react(main, [])
 
+Documentation
+-------------
+
+The documentation is all on `Read the Docs`_.
+
+.. _`Read the Docs`: https://alchimia.readthedocs.org/
 
 Limitations
 -----------
