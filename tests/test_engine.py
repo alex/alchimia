@@ -5,7 +5,9 @@ from sqlalchemy.exc import StatementError
 from twisted.trial import unittest
 
 from alchimia import TWISTED_STRATEGY
-from alchimia.engine import TwistedEngine, TwistedConnection
+from alchimia.engine import (
+    TwistedEngine, TwistedConnection, TwistedTransaction,
+)
 
 from .doubles import FakeThreadedReactor
 
@@ -65,6 +67,31 @@ class TestConnection(unittest.TestCase):
         failure = self.failureResultOf(
             conn.execute("SELECT 42"), StatementError)
         assert "This Connection is closed" in str(failure)
+
+    def test_transaction(self):
+        conn = self.get_connection()
+        assert not conn.in_transaction()
+
+        transaction = self.successResultOf(conn.begin())
+        assert isinstance(transaction, TwistedTransaction)
+        assert conn.in_transaction()
+
+        self.successResultOf(transaction.close())
+        assert not conn.in_transaction()
+
+    def test_nested_transaction(self):
+        conn = self.get_connection()
+        assert not conn.in_transaction()
+
+        trx1 = self.successResultOf(conn.begin())
+        assert conn.in_transaction()
+        trx2 = self.successResultOf(conn.begin())
+        assert conn.in_transaction()
+
+        self.successResultOf(trx2.close())
+        assert conn.in_transaction()
+        self.successResultOf(trx1.close())
+        assert not conn.in_transaction()
 
 
 class TestResultProxy(unittest.TestCase):
