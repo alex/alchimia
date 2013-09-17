@@ -53,6 +53,16 @@ class TestConnection(unittest.TestCase):
         d = result.scalar()
         assert self.successResultOf(d) == 42
 
+    def test_close(self):
+        conn = self.get_connection()
+        assert not conn.closed
+        result = self.successResultOf(conn.execute("SELECT 42"))
+        assert self.successResultOf(result.scalar()) == 42
+
+        self.successResultOf(conn.close())
+        assert conn.closed
+        failure = self.failureResultOf(conn.execute("SELECT 42"))
+        assert "This Connection is closed" in str(failure)
 
 class TestResultProxy(unittest.TestCase):
     def test_fetchone(self):

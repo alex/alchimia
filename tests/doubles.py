@@ -1,4 +1,5 @@
 from twisted.internet.interfaces import IReactorThreads
+from twisted.python.failure import Failure
 
 from zope.interface import implementer
 
@@ -14,4 +15,9 @@ class FakeThreadedReactor(object):
 
 class FakeThreadPool(object):
     def callInThreadWithCallback(self, cb, f, *args, **kwargs):
-        cb(True, f(*args, **kwargs))
+        try:
+            result = f(*args, **kwargs)
+        except Exception as e:
+            cb(False, Failure(e))
+        else:
+            cb(True, result)
