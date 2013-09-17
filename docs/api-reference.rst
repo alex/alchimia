@@ -6,6 +6,7 @@ you to :doc:`file bugs </contributing>` in those cases.
 
 .. currentmodule:: alchimia.engine
 
+
 .. class:: TwistedEngine
 
     Mostly like :class:`sqlalchemy.engine.Engine` except some of the methods
@@ -21,6 +22,7 @@ you to :doc:`file bugs </contributing>` in those cases.
         Like the SQLAlchemy method of the same name, except returns a
         ``Deferred`` which fires with a :class:`TwistedResultProxy`.
 
+
 .. class:: TwistedConnection
 
     Mostly like :class:`sqlalchemy.engine.Connection` except some of the
@@ -30,6 +32,45 @@ you to :doc:`file bugs </contributing>` in those cases.
 
         Like the SQLAlchemy method of the same name, except returns a
         ``Deferred`` which fires with a :class:`TwistedResultProxy`.
+
+    .. method:: close()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires when the connection has been closed.
+
+    .. attribute:: closed
+
+        Like the SQLAlchemy attribute of the same name.
+
+    .. method:: begin()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires with a :class:`TwistedTransaction`.
+
+    .. method:: in_transaction()
+
+        Like the SQLAlchemy method of the same name.
+
+
+.. class:: TwistedTransaction
+
+    Mostly like :class:`sqlalchemy.engine.Transaction` except some of the
+    methods return ``Deferreds``.
+
+    .. method:: commit()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires when the transaction has been committed.
+
+    .. method:: rollback()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires when the transaction has been rolled back.
+
+    .. method:: closed()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires when the transaction has been closed.
 
 
 .. class:: TwistedResultProxy
