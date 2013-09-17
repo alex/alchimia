@@ -19,7 +19,7 @@ with open("README.rst") as f:
 
 setup(
     name="alchimia",
-    version="0.2-dev",
+    version="0.3-dev",
 
     description="(SQLAlchemy - ORM) + Twisted = win",
     long_description=long_description,
