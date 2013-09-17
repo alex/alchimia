@@ -1,9 +1,8 @@
 Welcome to ``alchimia``
 =======================
 
-``alchimia`` lets you use most of the
-:doc:`SQLAlchemy-core <sqlalchemy:/core>` API with Twisted, it does
-not allow you to use the ORM.
+``alchimia`` lets you use most of the `SQLAlchemy-core`_ API with Twisted, it
+does not allow you to use the ORM.
 
 Getting started
 ---------------
@@ -58,6 +57,7 @@ Get the code
 
 We're on `github`_. Fork us!
 
+.. _`SQLAlchemy-core`: http://docs.sqlalchemy.org/en/latest/core/tutorial.html
 .. _`github`: https://github.com/alex/alchimia
 
 
