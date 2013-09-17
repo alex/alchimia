@@ -2,3 +2,5 @@
 _build/
 .tox/
 *.egg-info/
+AUTHORS
+ChangeLog

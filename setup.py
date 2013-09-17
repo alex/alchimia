@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,22 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup, find_packages
+# THIS FILE IS MANAGED BY THE GLOBAL REQUIREMENTS REPO - DO NOT EDIT
+import setuptools
 
-
-with open("README.rst") as f:
-    long_description = f.read()
-
-setup(
-    name="alchimia",
-    version="0.3-dev",
-
-    description="(SQLAlchemy - ORM) + Twisted = win",
-    long_description=long_description,
-    license="MIT",
-    url="https://github.com/alex/alchimia",
-
-    author="Alex Gaynor and David Reid",
-
-    packages=find_packages(exclude=["tests", "tests.*"]),
-)
+setuptools.setup(
+    setup_requires=['pbr'],
+    pbr=True)
