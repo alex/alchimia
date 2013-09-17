@@ -25,31 +25,36 @@ class TestEngineCreation(object):
         assert isinstance(engine, TwistedEngine)
 
 
-class TestConnect(unittest.TestCase):
-    def test_engine_connect(self):
+class TestEngine(unittest.TestCase):
+    def test_connect(self):
         engine = create_engine()
         d = engine.connect()
         connection = self.successResultOf(d)
         assert isinstance(connection, TwistedConnection)
 
-
-class TestConnection(unittest.TestCase):
-    def test_engine_execute(self):
+    def test_execute(self):
         engine = create_engine()
         d = engine.execute("SELECT 42")
         result = self.successResultOf(d)
         d = result.scalar()
         assert self.successResultOf(d) == 42
 
-    def test_connection_execute(self):
+
+class TestConnection(unittest.TestCase):
+    def get_connection(self):
         engine = create_engine()
         d = engine.connect()
-        conn = self.successResultOf(d)
+        return self.successResultOf(d)
+
+    def test_execute(self):
+        conn = self.get_connection()
         d = conn.execute("SELECT 42")
         result = self.successResultOf(d)
         d = result.scalar()
         assert self.successResultOf(d) == 42
 
+
+class TestResultProxy(unittest.TestCase):
     def test_fetchone(self):
         engine = create_engine()
         d = engine.execute("SELECT 42")
