@@ -26,6 +26,11 @@ you to :doc:`file bugs </contributing>` in those cases.
     Mostly like :class:`sqlalchemy.engine.Connection` except some of the
     methods return ``Deferreds``.
 
+    .. method:: execute(*args, **kwargs)
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires with a :class:`TwistedResultProxy`.
+
 
 .. class:: TwistedResultProxy
 
