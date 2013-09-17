@@ -31,6 +31,15 @@ you to :doc:`file bugs </contributing>` in those cases.
         Like the SQLAlchemy method of the same name, except returns a
         ``Deferred`` which fires with a :class:`TwistedResultProxy`.
 
+    .. method:: close()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires when the connection has been closed.
+
+    .. attribute:: closed
+
+        Like the SQLAlchemy attribute of the same name.
+
 
 .. class:: TwistedResultProxy
 

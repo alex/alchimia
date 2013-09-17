@@ -54,6 +54,14 @@ class TwistedConnection(object):
         d.addCallback(TwistedResultProxy, self._engine)
         return d
 
+    def close(self, *args, **kwargs):
+        return self._engine._defer_to_thread(
+            self._connection.close, *args, **kwargs)
+
+    @property
+    def closed(self):
+        return self._connection.closed
+
 
 class TwistedResultProxy(object):
     def __init__(self, result_proxy, engine):

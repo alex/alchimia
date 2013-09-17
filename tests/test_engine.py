@@ -1,5 +1,6 @@
 import sqlalchemy
 from sqlalchemy.engine import RowProxy
+from sqlalchemy.exc import StatementError
 
 from twisted.trial import unittest
 
@@ -52,6 +53,18 @@ class TestConnection(unittest.TestCase):
         result = self.successResultOf(d)
         d = result.scalar()
         assert self.successResultOf(d) == 42
+
+    def test_close(self):
+        conn = self.get_connection()
+        assert not conn.closed
+        result = self.successResultOf(conn.execute("SELECT 42"))
+        assert self.successResultOf(result.scalar()) == 42
+
+        self.successResultOf(conn.close())
+        assert conn.closed
+        failure = self.failureResultOf(
+            conn.execute("SELECT 42"), StatementError)
+        assert "This Connection is closed" in str(failure)
 
 
 class TestResultProxy(unittest.TestCase):
