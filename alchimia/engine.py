@@ -68,18 +68,8 @@ class TwistedConnection(object):
         d.addCallback(TwistedTransaction, self._engine)
         return d
 
-    def close(self, *args, **kwargs):
-        d = self._engine._defer_to_thread(
-            self._connection.close, *args, **kwargs)
-        d.addCallback(TwistedTransaction, self._engine)
-        return d
-
     def in_transaction(self):
         return self._connection.in_transaction()
-
-    @property
-    def closed(self):
-        return self._connection.closed
 
 
 class TwistedTransaction(object):
