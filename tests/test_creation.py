@@ -34,9 +34,18 @@ class TestConnect(unittest.TestCase):
 
 
 class TestConnection(unittest.TestCase):
-    def test_execute(self):
+    def test_engine_execute(self):
         engine = create_engine()
         d = engine.execute("SELECT 42")
+        result = self.successResultOf(d)
+        d = result.scalar()
+        assert self.successResultOf(d) == 42
+
+    def test_connection_execute(self):
+        engine = create_engine()
+        d = engine.connect()
+        conn = self.successResultOf(d)
+        d = conn.execute("SELECT 42")
         result = self.successResultOf(d)
         d = result.scalar()
         assert self.successResultOf(d) == 42
