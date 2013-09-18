@@ -7,7 +7,7 @@ env:
     - TOX_ENV=pep8
 
 install:
-    - pip install tox
+    - pip install tox pbr
 
 script:
     - tox -e $TOX_ENV
