@@ -43,6 +43,24 @@ class TestEngine(unittest.TestCase):
         d = result.scalar()
         assert self.successResultOf(d) == 42
 
+    def test_table_names(self):
+        engine = create_engine()
+        d = engine.table_names()
+        assert self.successResultOf(d) == []
+        d = engine.execute("CREATE TABLE mytable (id int)")
+        self.successResultOf(d)
+        d = engine.table_names()
+        assert self.successResultOf(d) == ['mytable']
+
+    def test_has_table(self):
+        engine = create_engine()
+        d = engine.has_table('mytable')
+        assert self.successResultOf(d) is False
+        d = engine.execute("CREATE TABLE mytable (id int)")
+        self.successResultOf(d)
+        d = engine.has_table('mytable')
+        assert self.successResultOf(d) is True
+
 
 class TestConnection(unittest.TestCase):
     def get_connection(self):
