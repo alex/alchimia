@@ -52,6 +52,18 @@ class TestEngine(unittest.TestCase):
         d = engine.table_names()
         assert self.successResultOf(d) == ['mytable']
 
+    def test_table_names_with_connection(self):
+        # NOTE: There's no easy way to tell which connection was actually used,
+        #       so this test just provides coverage for the code path.
+        engine = create_engine()
+        conn = self.successResultOf(engine.connect())
+        d = engine.table_names(connection=conn)
+        assert self.successResultOf(d) == []
+        d = conn.execute("CREATE TABLE mytable (id int)")
+        self.successResultOf(d)
+        d = engine.table_names(connection=conn)
+        assert self.successResultOf(d) == ['mytable']
+
     def test_has_table(self):
         engine = create_engine()
         d = engine.has_table('mytable')
