@@ -22,6 +22,16 @@ you to :doc:`file bugs </contributing>` in those cases.
         Like the SQLAlchemy method of the same name, except returns a
         ``Deferred`` which fires with a :class:`TwistedResultProxy`.
 
+    .. method:: has_table(table_name, schema=None)
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires with the result.
+
+    .. method:: table_names(schema=None, connection=None)
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires with the result.
+
 
 .. class:: TwistedConnection
 

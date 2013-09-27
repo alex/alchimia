@@ -41,6 +41,16 @@ class TwistedEngine(object):
         d.addCallback(TwistedResultProxy, self)
         return d
 
+    def has_table(self, table_name, schema=None):
+        return self._defer_to_thread(
+            self._engine.has_table, table_name, schema)
+
+    def table_names(self, schema=None, connection=None):
+        if connection is not None:
+            connection = connection._connection
+        return self._defer_to_thread(
+            self._engine.table_names, schema, connection)
+
 
 class TwistedConnection(object):
     def __init__(self, connection, engine):
