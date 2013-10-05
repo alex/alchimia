@@ -112,3 +112,17 @@ class TwistedResultProxy(object):
 
     def scalar(self):
         return self._engine._defer_to_thread(self._result_proxy.scalar)
+
+    def first(self):
+        return self._engine._defer_to_thread(self._result_proxy.first)
+
+    def keys(self):
+        return self._engine._defer_to_thread(self._result_proxy.keys)
+
+    @property
+    def returns_rows(self):
+        return self._result_proxy.returns_rows
+
+    @property
+    def rowcount(self):
+        return self._result_proxy.rowcount

@@ -102,3 +102,21 @@ you to :doc:`file bugs </contributing>` in those cases.
 
         Like the SQLAlchemy method of the same name, except returns a
         ``Deferred`` which fires with the scalar value.
+
+    .. method:: first()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires with the scalar value.
+
+    .. method:: keys()
+
+        Like the SQLAlchemy method of the same name, except returns a
+        ``Deferred`` which fires with the scalar value.
+
+    .. attribute:: returns_rows
+
+        Like the SQLAlchemy attribute of the same name.
+
+    .. attribute:: rowcount
+
+        Like the SQLAlchemy attribute of the same name.
