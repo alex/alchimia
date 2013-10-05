@@ -167,11 +167,9 @@ class TestConnection(unittest.TestCase):
 
 
 class TestResultProxy(unittest.TestCase):
-    def create_table(self, sql=None):
-        if not sql:
-            sql = "CREATE TABLE testtable (id int)"
+    def create_default_table(self):
         engine = create_engine()
-        d = engine.execute(sql)
+        d = engine.execute("CREATE TABLE testtable (id int)")
         self.successResultOf(d)
         return engine
 
@@ -194,9 +192,7 @@ class TestResultProxy(unittest.TestCase):
         assert rows[0][0] == 10
 
     def test_first(self):
-        engine = create_engine()
-        d = engine.execute("CREATE TABLE testtable (id int)")
-        self.successResultOf(d)
+        engine = self.create_default_table()
         d = engine.execute("INSERT INTO testtable (id) VALUES (2)")
         self.successResultOf(d)
         d = engine.execute("INSERT INTO testtable (id) VALUES (3)")
@@ -221,10 +217,7 @@ class TestResultProxy(unittest.TestCase):
         assert 'name' in keys
 
     def test_returns_rows(self):
-        #engine = create_engine()
-        #d = engine.execute("CREATE TABLE testtable (id int)")
-        #self.successResultOf(d)
-        engine = self.create_table()
+        engine = self.create_default_table()
         d = engine.execute("INSERT INTO testtable values (2)")
         result = self.successResultOf(d)
         assert not result.returns_rows
@@ -233,7 +226,7 @@ class TestResultProxy(unittest.TestCase):
         assert result.returns_rows
 
     def test_rowcount(self):
-        engine = self.create_table()
+        engine = self.create_default_table()
         d = engine.execute("INSERT INTO testtable VALUES (1)")
         self.successResultOf(d)
         d = engine.execute("INSERT INTO testtable VALUES (2)")
