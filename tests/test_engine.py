@@ -167,6 +167,12 @@ class TestConnection(unittest.TestCase):
 
 
 class TestResultProxy(unittest.TestCase):
+    def create_default_table(self):
+        engine = create_engine()
+        d = engine.execute("CREATE TABLE testtable (id int)")
+        self.successResultOf(d)
+        return engine
+
     def test_fetchone(self):
         engine = create_engine()
         d = engine.execute("SELECT 42")
@@ -184,3 +190,52 @@ class TestResultProxy(unittest.TestCase):
         rows = self.successResultOf(d)
         assert len(rows) == 1
         assert rows[0][0] == 10
+
+    def test_first(self):
+        engine = self.create_default_table()
+        d = engine.execute("INSERT INTO testtable (id) VALUES (2)")
+        self.successResultOf(d)
+        d = engine.execute("INSERT INTO testtable (id) VALUES (3)")
+        self.successResultOf(d)
+        d = engine.execute("SELECT * FROM testtable ORDER BY id ASC")
+        result = self.successResultOf(d)
+        d = result.first()
+        row = self.successResultOf(d)
+        assert len(row) == 1
+        assert row[0] == 2
+
+    def test_keys(self):
+        engine = create_engine()
+        d = engine.execute("CREATE TABLE testtable (id int, name varchar)")
+        self.successResultOf(d)
+        d = engine.execute("SELECT * FROM testtable")
+        result = self.successResultOf(d)
+        d = result.keys()
+        keys = self.successResultOf(d)
+        assert len(keys) == 2
+        assert 'id' in keys
+        assert 'name' in keys
+
+    def test_returns_rows(self):
+        engine = self.create_default_table()
+        d = engine.execute("INSERT INTO testtable values (2)")
+        result = self.successResultOf(d)
+        assert not result.returns_rows
+        d = engine.execute("SELECT * FROM testtable")
+        result = self.successResultOf(d)
+        assert result.returns_rows
+
+    def test_rowcount(self):
+        engine = self.create_default_table()
+        d = engine.execute("INSERT INTO testtable VALUES (1)")
+        self.successResultOf(d)
+        d = engine.execute("INSERT INTO testtable VALUES (2)")
+        self.successResultOf(d)
+        d = engine.execute("INSERT INTO testtable VALUES (3)")
+        self.successResultOf(d)
+        d = engine.execute("UPDATE testtable SET id = 7 WHERE id < 3")
+        result = self.successResultOf(d)
+        assert result.rowcount == 2
+        d = engine.execute("DELETE from testtable")
+        result = self.successResultOf(d)
+        assert result.rowcount == 3
