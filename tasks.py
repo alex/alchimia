@@ -8,4 +8,4 @@ def release(version):
     """
     run('git tag -s "{}"'.format(version))
     run('python setup.py sdist bdist_wheel')
-    run('twine upload/alchimia-{}*'.format(version))
+    run('twine upload -s dist/alchimia-{}*'.format(version))
