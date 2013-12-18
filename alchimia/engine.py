@@ -8,7 +8,6 @@ class TwistedEngine(object):
         if reactor is None:
             raise TypeError("Must provide a reactor")
 
-        super(TwistedEngine, self).__init__()
         self._engine = Engine(pool, dialect, url, **kwargs)
         self._reactor = reactor
 
