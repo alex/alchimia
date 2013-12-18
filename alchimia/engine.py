@@ -53,7 +53,6 @@ class TwistedEngine(object):
 
 class TwistedConnection(object):
     def __init__(self, connection, engine):
-        super(TwistedConnection, self).__init__()
         self._connection = connection
         self._engine = engine
 
@@ -83,7 +82,6 @@ class TwistedConnection(object):
 
 class TwistedTransaction(object):
     def __init__(self, transaction, engine):
-        super(TwistedTransaction, self).__init__()
         self._transaction = transaction
         self._engine = engine
 
@@ -99,7 +97,6 @@ class TwistedTransaction(object):
 
 class TwistedResultProxy(object):
     def __init__(self, result_proxy, engine):
-        super(TwistedResultProxy, self).__init__()
         self._result_proxy = result_proxy
         self._engine = engine
 
