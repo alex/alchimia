@@ -70,5 +70,7 @@ API.
   return value we can control. Since most of the ``alchimia`` API is predicated
   on returning ``Deferred`` instances which fire with the underlying SQLAlchemy
   instances, it is impossible for us to wrap these methods in a useful way.
-  Luckily, many of these methods have alternate spelling. The docs call these
+  Luckily, many of these methods have alternate spelling. `The docs`_ call these
   out in more detail.
+
+.. _`The docs`: https://alchimia.readthedocs.org/en/latest/limitations/
