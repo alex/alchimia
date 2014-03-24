@@ -122,3 +122,7 @@ class TwistedResultProxy(object):
     @property
     def rowcount(self):
         return self._result_proxy.rowcount
+
+    @property
+    def inserted_primary_key(self):
+        return self._result_proxy.inserted_primary_key

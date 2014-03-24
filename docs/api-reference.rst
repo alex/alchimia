@@ -120,3 +120,7 @@ you to :doc:`file bugs </contributing>` in those cases.
     .. attribute:: rowcount
 
         Like the SQLAlchemy attribute of the same name.
+
+    .. attribute:: inserted_primary_key
+
+        Like the SQLAlchemy attribute of the same name.

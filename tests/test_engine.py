@@ -239,3 +239,14 @@ class TestResultProxy(unittest.TestCase):
         d = engine.execute("DELETE from testtable")
         result = self.successResultOf(d)
         assert result.rowcount == 3
+
+    def test_inserted_primary_key(self):
+        metadata = sqlalchemy.MetaData()
+        tbl = sqlalchemy.Table(
+            'testtable', metadata,
+            sqlalchemy.Column("id", sqlalchemy.Integer(), primary_key=True),
+        )
+        engine = self.create_default_table()
+        d = engine.execute(tbl.insert().values())
+        result = self.successResultOf(d)
+        assert result.inserted_primary_key == [1], result.inserted_primary_key
