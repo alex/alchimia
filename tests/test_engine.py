@@ -245,12 +245,8 @@ class TestResultProxy(unittest.TestCase):
         tbl = sqlalchemy.Table(
             'testtable', metadata,
             sqlalchemy.Column("id", sqlalchemy.Integer(), primary_key=True),
-            sqlalchemy.Column("num", sqlalchemy.Integer()),
         )
-        engine = create_engine()
-        d = engine.execute("CREATE TABLE testtable (id integer primary key,"
-                           "num integer)")
-        self.successResultOf(d)
-        d = engine.execute(tbl.insert().values(num=43))
+        engine = self.create_default_table()
+        d = engine.execute(tbl.insert().values())
         result = self.successResultOf(d)
         assert result.inserted_primary_key == [1], result.inserted_primary_key
