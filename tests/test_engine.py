@@ -53,8 +53,8 @@ class TestEngine(unittest.TestCase):
         assert self.successResultOf(d) == ['mytable']
 
     def test_table_names_with_connection(self):
-        # NOTE: There's no easy way to tell which connection was actually used,
-        #       so this test just provides coverage for the code path.
+        # There's no easy way to tell which connection was actually used, so
+        # this test just provides coverage for the code path.
         engine = create_engine()
         conn = self.successResultOf(engine.connect())
         d = engine.table_names(connection=conn)
@@ -249,4 +249,4 @@ class TestResultProxy(unittest.TestCase):
         engine = self.create_default_table()
         d = engine.execute(tbl.insert().values())
         result = self.successResultOf(d)
-        assert result.inserted_primary_key == [1], result.inserted_primary_key
+        assert result.inserted_primary_key == [1]
