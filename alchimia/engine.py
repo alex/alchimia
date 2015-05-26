@@ -16,7 +16,9 @@ class TwistedEngine(object):
         self._tpool = twisted_thread_pool
 
     def _defer_to_thread(self, f, *args, **kwargs):
-        return deferToThreadPool(self._reactor, self._tpool, f, *args, **kwargs)
+        return deferToThreadPool(
+            self._reactor, self._tpool, f, *args, **kwargs
+        )
 
     @property
     def dialect(self):
