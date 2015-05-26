@@ -33,7 +33,7 @@ class TestEngineCreation(unittest.TestCase):
             "sqlite://",
             strategy=TWISTED_STRATEGY,
             reactor=UnthreadedReactor(),
-            twisted_thread_pool=FakeThreadPool(),
+            thread_pool=FakeThreadPool(),
         )
         assert isinstance(engine, TwistedEngine)
         d = engine.connect()

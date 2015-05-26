@@ -4,16 +4,16 @@ from twisted.internet.threads import deferToThreadPool
 
 
 class TwistedEngine(object):
-    def __init__(self, pool, dialect, url, reactor=None,
-                 twisted_thread_pool=None, **kwargs):
+    def __init__(self, pool, dialect, url, reactor=None, thread_pool=None,
+                 **kwargs):
         if reactor is None:
             raise TypeError("Must provide a reactor")
 
         self._engine = Engine(pool, dialect, url, **kwargs)
         self._reactor = reactor
-        if twisted_thread_pool is None:
-            twisted_thread_pool = reactor.getThreadPool()
-        self._tpool = twisted_thread_pool
+        if thread_pool is None:
+            thread_pool = reactor.getThreadPool()
+        self._tpool = thread_pool
 
     def _defer_to_thread(self, f, *args, **kwargs):
         return deferToThreadPool(
