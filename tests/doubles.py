@@ -13,6 +13,15 @@ class FakeThreadedReactor(object):
         return f(*args, **kwargs)
 
 
+@implementer(IReactorThreads)
+class UnthreadedReactor(object):
+    def getThreadPool(self):
+        raise ValueError
+
+    def callFromThread(self, f, *args, **kwargs):
+        return f(*args, **kwargs)
+
+
 class FakeThreadPool(object):
     def callInThreadWithCallback(self, cb, f, *args, **kwargs):
         try:
