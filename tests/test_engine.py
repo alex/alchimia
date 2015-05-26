@@ -10,7 +10,7 @@ from alchimia.engine import (
     TwistedEngine, TwistedConnection, TwistedTransaction,
 )
 
-from .doubles import FakeThreadedReactor
+from .doubles import FakeThreadedReactor, FakeThreadPool, UnthreadedReactor
 
 
 def create_engine():
@@ -19,7 +19,7 @@ def create_engine():
     )
 
 
-class TestEngineCreation(object):
+class TestEngineCreation(unittest.TestCase):
     def test_simple_create_engine(self):
         engine = sqlalchemy.create_engine(
             "sqlite://",
@@ -27,6 +27,18 @@ class TestEngineCreation(object):
             reactor=FakeThreadedReactor()
         )
         assert isinstance(engine, TwistedEngine)
+
+    def test_explicit_pool(self):
+        engine = sqlalchemy.create_engine(
+            "sqlite://",
+            strategy=TWISTED_STRATEGY,
+            reactor=UnthreadedReactor(),
+            twisted_thread_pool=FakeThreadPool(),
+        )
+        assert isinstance(engine, TwistedEngine)
+        d = engine.connect()
+        connection = self.successResultOf(d)
+        assert isinstance(connection, TwistedConnection)
 
 
 class TestEngine(unittest.TestCase):
