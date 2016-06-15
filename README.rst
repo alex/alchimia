@@ -56,7 +56,7 @@ Documentation
 
 The documentation is all on `Read the Docs`_.
 
-.. _`Read the Docs`: https://alchimia.readthedocs.org/
+.. _`Read the Docs`: https://alchimia.readthedocs.io/
 
 Limitations
 -----------
@@ -73,4 +73,4 @@ API.
   Luckily, many of these methods have alternate spelling. `The docs`_ call these
   out in more detail.
 
-.. _`The docs`: https://alchimia.readthedocs.org/en/latest/limitations/
+.. _`The docs`: https://alchimia.readthedocs.io/en/latest/limitations/
