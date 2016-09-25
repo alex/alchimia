@@ -7,7 +7,12 @@ from twisted._threads import ThreadWorker
 from twisted.internet.defer import Deferred
 from twisted.python.failure import Failure
 
-from threading import Thread, Queue
+from threading import Thread
+
+try:
+    from Queue import Queue
+except:
+    from queue import Queue
 
 def _start_thread(target):
     thread = Thread(target=target)
