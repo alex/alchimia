@@ -114,25 +114,25 @@ class TwistedConnection(object):
 
     def begin(self, *args, **kwargs):
         return (self._defer_to_cxn(self._connection.begin, *args, **kwargs)
-                .addCallback(TwistedTransaction, self))
+                .addCallback(lambda txn: TwistedTransaction(txn, self)))
 
     def in_transaction(self):
         return self._connection.in_transaction()
 
 
 class TwistedTransaction(object):
-    def __init__(self, transaction, engine):
+    def __init__(self, transaction, cxn):
         self._transaction = transaction
-        self._engine = engine
+        self._cxn = cxn
 
     def commit(self):
-        return self._defer_to_cxn(self._transaction.commit)
+        return self._cxn._defer_to_cxn(self._transaction.commit)
 
     def rollback(self):
-        return self._defer_to_cxn(self._transaction.rollback)
+        return self._cxn._defer_to_cxn(self._transaction.rollback)
 
     def close(self):
-        return self._defer_to_cxn(self._transaction.close)
+        return self._cxn._defer_to_cxn(self._transaction.close)
 
 
 class TwistedResultProxy(object):
