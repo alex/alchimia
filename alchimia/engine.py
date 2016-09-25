@@ -2,25 +2,50 @@ from __future__ import absolute_import, division
 
 from sqlalchemy.engine.base import Engine
 
-from twisted.internet.threads import deferToThreadPool
+from twisted._threads import ThreadWorker
+
+from twisted.internet.defer import Deferred
+from twisted.python.failure import Failure
+
+from threading import Thread, Queue
+
+def _start_thread(target):
+    thread = Thread(target=target)
+    thread.daemon = True
+    return thread.start()
+
+
+def _new_worker():
+    return ThreadWorker(_start_thread, Queue())
+
+
+def _defer_to_worker(deliver, worker, work, *args, **kwargs):
+    deferred = Deferred()
+    @worker.do
+    def container():
+        try:
+            result = work(*args, **kwargs)
+        except:
+            f = Failure()
+            deliver(lambda: deferred.errback(f))
+        else:
+            deliver(lambda: deferred.callback(result))
+    return deferred
 
 
 class TwistedEngine(object):
-    def __init__(self, pool, dialect, url, reactor=None, thread_pool=None,
-                 **kwargs):
+    def __init__(self, pool, dialect, url, reactor=None,
+                 create_worker=_new_worker, **kwargs):
         if reactor is None:
             raise TypeError("Must provide a reactor")
 
         self._engine = Engine(pool, dialect, url, **kwargs)
         self._reactor = reactor
-        if thread_pool is None:
-            thread_pool = reactor.getThreadPool()
-        self._tpool = thread_pool
+        self._engine_worker = _new_worker()
 
-    def _defer_to_thread(self, f, *args, **kwargs):
-        return deferToThreadPool(
-            self._reactor, self._tpool, f, *args, **kwargs
-        )
+    def _defer_to_engine(self, f, *a, **k):
+        return _defer_to_worker(self._reactor.callFromThread,
+                                self._engine_worker, f, *a, **k)
 
     @property
     def dialect(self):
@@ -37,51 +62,54 @@ class TwistedEngine(object):
     def _should_log_info(self):
         return self._engine._should_log_info()
 
-    def connect(self):
-        d = self._defer_to_thread(self._engine.connect)
-        d.addCallback(TwistedConnection, self)
-        return d
-
     def execute(self, *args, **kwargs):
-        d = self._defer_to_thread(self._engine.execute, *args, **kwargs)
-        d.addCallback(TwistedResultProxy, self)
-        return d
+        return (self._defer_to_engine(self._engine.execute, *args, **kwargs)
+                .addCallback(TwistedResultProxy, self))
 
     def has_table(self, table_name, schema=None):
-        return self._defer_to_thread(
+        return self._defer_to_engine(
             self._engine.has_table, table_name, schema)
 
     def table_names(self, schema=None, connection=None):
         if connection is not None:
             connection = connection._connection
-        return self._defer_to_thread(
+        return self._defer_to_engine(
             self._engine.table_names, schema, connection)
+
+    def connect(self):
+        worker = _new_worker()
+        return (_defer_to_worker(self._reactor.callFromThread, worker,
+                                 self._engine.connect)
+                .addCallback(TwistedConnection, self, worker))
+
 
 
 class TwistedConnection(object):
-    def __init__(self, connection, engine):
+    def __init__(self, connection, engine, worker):
         self._connection = connection
         self._engine = engine
+        self._cxn_worker = worker
+
+    def _defer_to_cxn(self, f, *a, **k):
+        return _defer_to_worker(self._reactor.callFromThread,
+                                self._cxn_worker, f, *a, **k)
 
     def execute(self, *args, **kwargs):
-        d = self._engine._defer_to_thread(
-            self._connection.execute, *args, **kwargs)
-        d.addCallback(TwistedResultProxy, self._engine)
-        return d
+        return (self._defer_to_cxn(self._connection.execute, *args, **kwargs)
+                .addCallback(TwistedResultProxy, self._defer_to_cxn))
 
     def close(self, *args, **kwargs):
-        return self._engine._defer_to_thread(
-            self._connection.close, *args, **kwargs)
+        result = self._defer_to_cxn(self._connection.close, *args, **kwargs)
+        self._cxn_worker.quit()
+        return result
 
     @property
     def closed(self):
         return self._connection.closed
 
     def begin(self, *args, **kwargs):
-        d = self._engine._defer_to_thread(
-            self._connection.begin, *args, **kwargs)
-        d.addCallback(TwistedTransaction, self._engine)
-        return d
+        return (self._defer_to_cxn(self._connection.begin, *args, **kwargs)
+                .addCallback(TwistedTransaction, self))
 
     def in_transaction(self):
         return self._connection.in_transaction()
@@ -93,34 +121,34 @@ class TwistedTransaction(object):
         self._engine = engine
 
     def commit(self):
-        return self._engine._defer_to_thread(self._transaction.commit)
+        return self._defer_to_cxn(self._transaction.commit)
 
     def rollback(self):
-        return self._engine._defer_to_thread(self._transaction.rollback)
+        return self._defer_to_cxn(self._transaction.rollback)
 
     def close(self):
-        return self._engine._defer_to_thread(self._transaction.close)
+        return self._defer_to_cxn(self._transaction.close)
 
 
 class TwistedResultProxy(object):
-    def __init__(self, result_proxy, engine):
+    def __init__(self, result_proxy, deferrer):
         self._result_proxy = result_proxy
-        self._engine = engine
+        self._deferrer = deferrer
 
     def fetchone(self):
-        return self._engine._defer_to_thread(self._result_proxy.fetchone)
+        return self._deferrer(self._result_proxy.fetchone)
 
     def fetchall(self):
-        return self._engine._defer_to_thread(self._result_proxy.fetchall)
+        return self._deferrer(self._result_proxy.fetchall)
 
     def scalar(self):
-        return self._engine._defer_to_thread(self._result_proxy.scalar)
+        return self._deferrer(self._result_proxy.scalar)
 
     def first(self):
-        return self._engine._defer_to_thread(self._result_proxy.first)
+        return self._deferrer(self._result_proxy.first)
 
     def keys(self):
-        return self._engine._defer_to_thread(self._result_proxy.keys)
+        return self._deferrer(self._result_proxy.keys)
 
     @property
     def returns_rows(self):
