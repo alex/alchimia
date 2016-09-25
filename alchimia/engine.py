@@ -83,7 +83,7 @@ class TwistedEngine(object):
 
     def connect(self):
         worker = _new_worker()
-        return (_defer_to_worker(self._reactor.callFromThread, worker,
+        return (_defer_to_worker(self._engine._reactor.callFromThread, worker,
                                  self._engine.connect)
                 .addCallback(TwistedConnection, self, worker))
 
@@ -96,7 +96,7 @@ class TwistedConnection(object):
         self._cxn_worker = worker
 
     def _defer_to_cxn(self, f, *a, **k):
-        return _defer_to_worker(self._reactor.callFromThread,
+        return _defer_to_worker(self._engine._reactor.callFromThread,
                                 self._cxn_worker, f, *a, **k)
 
     def execute(self, *args, **kwargs):
