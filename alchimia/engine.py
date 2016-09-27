@@ -1,10 +1,11 @@
 from __future__ import absolute_import, division
 
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import StatementError
 
-from twisted._threads import ThreadWorker
+from twisted._threads import ThreadWorker, AlreadyQuit
 
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred, fail
 from twisted.python.failure import Failure
 
 from threading import Thread
@@ -14,13 +15,11 @@ try:
 except:
     from queue import Queue
 
-def _start_thread(target):
-    thread = Thread(target=target)
-    thread.daemon = True
-    return thread.start()
-
-
-def _new_worker():
+def _threaded_worker():
+    def _start_thread(target):
+        thread = Thread(target=target)
+        thread.daemon = True
+        return thread.start()
     return ThreadWorker(_start_thread, Queue())
 
 
@@ -40,13 +39,14 @@ def _defer_to_worker(deliver, worker, work, *args, **kwargs):
 
 class TwistedEngine(object):
     def __init__(self, pool, dialect, url, reactor=None,
-                 create_worker=_new_worker, **kwargs):
+                 create_worker=_threaded_worker, **kwargs):
         if reactor is None:
             raise TypeError("Must provide a reactor")
 
         self._engine = Engine(pool, dialect, url, **kwargs)
         self._reactor = reactor
-        self._engine_worker = _new_worker()
+        self._create_worker = create_worker
+        self._engine_worker = self._create_worker()
 
     def _defer_to_engine(self, f, *a, **k):
         return _defer_to_worker(self._reactor.callFromThread,
@@ -69,7 +69,7 @@ class TwistedEngine(object):
 
     def execute(self, *args, **kwargs):
         return (self._defer_to_engine(self._engine.execute, *args, **kwargs)
-                .addCallback(TwistedResultProxy, self))
+                .addCallback(TwistedResultProxy, self._defer_to_engine))
 
     def has_table(self, table_name, schema=None):
         return self._defer_to_engine(
@@ -82,7 +82,7 @@ class TwistedEngine(object):
             self._engine.table_names, schema, connection)
 
     def connect(self):
-        worker = _new_worker()
+        worker = self._create_worker()
         return (_defer_to_worker(self._reactor.callFromThread, worker,
                                  self._engine.connect)
                 .addCallback(TwistedConnection, self, worker))
@@ -100,8 +100,14 @@ class TwistedConnection(object):
                                 self._cxn_worker, f, *a, **k)
 
     def execute(self, *args, **kwargs):
-        return (self._defer_to_cxn(self._connection.execute, *args, **kwargs)
-                .addCallback(TwistedResultProxy, self._defer_to_cxn))
+        try:
+            return (
+                self._defer_to_cxn(self._connection.execute, *args, **kwargs)
+                .addCallback(TwistedResultProxy, self._defer_to_cxn)
+            )
+        except AlreadyQuit:
+            return fail(StatementError("This Connection is closed.",
+                                       None, None, None))
 
     def close(self, *args, **kwargs):
         result = self._defer_to_cxn(self._connection.close, *args, **kwargs)
