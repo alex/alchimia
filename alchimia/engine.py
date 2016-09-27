@@ -15,6 +15,7 @@ try:
 except:
     from queue import Queue
 
+
 def _threaded_worker():
     def _start_thread(target):
         thread = Thread(target=target)
@@ -25,6 +26,7 @@ def _threaded_worker():
 
 def _defer_to_worker(deliver, worker, work, *args, **kwargs):
     deferred = Deferred()
+
     @worker.do
     def container():
         try:
@@ -86,7 +88,6 @@ class TwistedEngine(object):
         return (_defer_to_worker(self._reactor.callFromThread, worker,
                                  self._engine.connect)
                 .addCallback(TwistedConnection, self, worker))
-
 
 
 class TwistedConnection(object):
