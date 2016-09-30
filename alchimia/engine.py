@@ -12,7 +12,7 @@ from threading import Thread
 
 try:
     from Queue import Queue
-except:
+except ImportError:
     from queue import Queue
 
 
