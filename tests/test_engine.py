@@ -12,12 +12,13 @@ from alchimia.engine import (
     TwistedEngine, TwistedConnection, TwistedTransaction,
 )
 
-from .doubles import FakeThreadedReactor, FakeThreadPool, UnthreadedReactor
+from .doubles import FakeThreadedReactor, ImmediateWorker
 
 
 def create_engine():
     return sqlalchemy.create_engine(
-        "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor()
+        "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor(),
+        create_worker=ImmediateWorker,
     )
 
 
@@ -29,18 +30,6 @@ class TestEngineCreation(unittest.TestCase):
             reactor=FakeThreadedReactor()
         )
         assert isinstance(engine, TwistedEngine)
-
-    def test_explicit_pool(self):
-        engine = sqlalchemy.create_engine(
-            "sqlite://",
-            strategy=TWISTED_STRATEGY,
-            reactor=UnthreadedReactor(),
-            thread_pool=FakeThreadPool(),
-        )
-        assert isinstance(engine, TwistedEngine)
-        d = engine.connect()
-        connection = self.successResultOf(d)
-        assert isinstance(connection, TwistedConnection)
 
 
 class TestEngine(unittest.TestCase):

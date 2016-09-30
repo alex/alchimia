@@ -1,32 +1,27 @@
 from twisted.internet.interfaces import IReactorThreads
-from twisted.python.failure import Failure
+from twisted._threads import IWorker, AlreadyQuit
 
 from zope.interface import implementer
 
 
 @implementer(IReactorThreads)
 class FakeThreadedReactor(object):
-    def getThreadPool(self):
-        return FakeThreadPool()
-
     def callFromThread(self, f, *args, **kwargs):
         return f(*args, **kwargs)
 
 
-@implementer(IReactorThreads)
-class UnthreadedReactor(object):
-    def getThreadPool(self):
-        raise ValueError
+@implementer(IWorker)
+class ImmediateWorker(object):
 
-    def callFromThread(self, f, *args, **kwargs):
-        return f(*args, **kwargs)
+    def __init__(self):
+        self._quitted = False
 
+    def do(self, work):
+        if self._quitted:
+            raise AlreadyQuit()
+        work()
 
-class FakeThreadPool(object):
-    def callInThreadWithCallback(self, cb, f, *args, **kwargs):
-        try:
-            result = f(*args, **kwargs)
-        except Exception as e:
-            cb(False, Failure(e))
-        else:
-            cb(True, result)
+    def quit(self):
+        if self._quitted:
+            raise AlreadyQuit()
+        self._quitted = True
