@@ -1,9 +1,12 @@
 from __future__ import absolute_import, division
 
+import os
+
 import sqlalchemy
+from sqlalchemy import (Table, Column, String, Integer)
 from sqlalchemy.engine import RowProxy
 from sqlalchemy.exc import StatementError
-from sqlalchemy.schema import CreateTable
+from sqlalchemy.schema import CreateTable, DropTable
 
 from twisted.trial import unittest
 
@@ -15,11 +18,15 @@ from alchimia.engine import (
 from .doubles import FakeThreadedReactor, ImmediateWorker
 
 
-def create_engine():
+def create_engine(**kwargs):
+    if 'TEST_DB_URL' in os.environ:
+        TEST_DB_URL = os.environ['TEST_DB_URL']
+    else:
+        TEST_DB_URL = 'sqlite://'
     return sqlalchemy.create_engine(
-        "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor(),
-        create_worker=ImmediateWorker,
-    )
+        TEST_DB_URL, strategy=TWISTED_STRATEGY,
+        reactor=FakeThreadedReactor(), create_worker=ImmediateWorker,
+        **kwargs)
 
 
 class TestEngineCreation(unittest.TestCase):
@@ -54,6 +61,7 @@ class TestEngine(unittest.TestCase):
         self.successResultOf(d)
         d = engine.table_names()
         assert self.successResultOf(d) == ['mytable']
+        engine.execute("DROP TABLE mytable")
 
     def test_table_names_with_connection(self):
         # There's no easy way to tell which connection was actually used, so
@@ -66,6 +74,7 @@ class TestEngine(unittest.TestCase):
         self.successResultOf(d)
         d = engine.table_names(connection=conn)
         assert self.successResultOf(d) == ['mytable']
+        engine.execute("DROP TABLE mytable")
 
     def test_has_table(self):
         engine = create_engine()
@@ -75,6 +84,33 @@ class TestEngine(unittest.TestCase):
         self.successResultOf(d)
         d = engine.has_table('mytable')
         assert self.successResultOf(d) is True
+        engine.execute("DROP TABLE mytable")
+
+    def test_more_queries_than_queuepool_slots(self):
+        table = Table('my_pool_table', sqlalchemy.MetaData(),
+                      Column('id', Integer, primary_key=True),
+                      Column('name', String, nullable=False))
+        data = [{'id': 0,
+                 'name': 'a'},
+                {'id': 1,
+                 'name': 'b'},
+                {'id': 2,
+                 'name': 'c'}]
+        # max_overflow kwarg broken, but defaults to 10
+        engine = create_engine(pool_size=5)
+        engine.execute(CreateTable(table))
+        engine.execute(table.insert(), data)
+        for _ in range(25):
+            from random import Random
+            entry = Random().choice(list(range(3)))
+            d = engine.execute(table.select().where(
+                table.c.id == data[entry]['id']))
+
+            result = self.successResultOf(d)
+            result = result.fetchone()
+            result = self.successResultOf(result)
+            assert result['name'] == data[entry]['name']
+        engine.execute(DropTable(table))
 
 
 class TestConnection(unittest.TestCase):
@@ -148,6 +184,7 @@ class TestConnection(unittest.TestCase):
         self.successResultOf(trx.commit())
         rows = self.execute_fetchall(conn, tbl.select())
         assert len(rows) == 1
+        conn.execute(DropTable(tbl))
 
     def test_transaction_rollback(self):
         metadata = sqlalchemy.MetaData()
@@ -167,6 +204,7 @@ class TestConnection(unittest.TestCase):
         self.successResultOf(trx.rollback())
         rows = self.execute_fetchall(conn, tbl.select())
         assert len(rows) == 0
+        conn.execute(DropTable(tbl))
 
 
 class TestResultProxy(unittest.TestCase):
@@ -206,6 +244,7 @@ class TestResultProxy(unittest.TestCase):
         row = self.successResultOf(d)
         assert len(row) == 1
         assert row[0] == 2
+        engine.execute("DROP TABLE testtable")
 
     def test_keys(self):
         engine = create_engine()
@@ -218,6 +257,7 @@ class TestResultProxy(unittest.TestCase):
         assert len(keys) == 2
         assert 'id' in keys
         assert 'name' in keys
+        engine.execute("DROP TABLE testtable")
 
     def test_returns_rows(self):
         engine = self.create_default_table()
@@ -227,6 +267,7 @@ class TestResultProxy(unittest.TestCase):
         d = engine.execute("SELECT * FROM testtable")
         result = self.successResultOf(d)
         assert result.returns_rows
+        engine.execute("DROP TABLE testtable")
 
     def test_rowcount(self):
         engine = self.create_default_table()
@@ -242,6 +283,7 @@ class TestResultProxy(unittest.TestCase):
         d = engine.execute("DELETE from testtable")
         result = self.successResultOf(d)
         assert result.rowcount == 3
+        engine.execute("DROP TABLE testtable")
 
     def test_inserted_primary_key(self):
         metadata = sqlalchemy.MetaData()
@@ -249,7 +291,10 @@ class TestResultProxy(unittest.TestCase):
             'testtable', metadata,
             sqlalchemy.Column("id", sqlalchemy.Integer(), primary_key=True),
         )
-        engine = self.create_default_table()
+        engine = create_engine()
+        d = engine.execute(CreateTable(tbl))
+        self.successResultOf(d)
         d = engine.execute(tbl.insert().values())
         result = self.successResultOf(d)
         assert result.inserted_primary_key == [1]
+        engine.execute(DropTable(tbl))
