@@ -29,7 +29,7 @@ def create_engine(**kwargs):
         reactor=FakeThreadedReactor(), create_worker=ImmediateWorker,
         **kwargs)
     if TEST_DB_URL.startswith("postgresql"):
-        tmpdb_name = "testdb"+hexlify(os.urandom(16))
+        tmpdb_name = "testdb"+hexlify(os.urandom(16)).decode()
         tmpdb_url = '/'.join(
             TEST_DB_URL.split('/')[:-1] + [tmpdb_name])
         conn = engine.connect().result
@@ -97,7 +97,7 @@ class TestEngine(unittest.TestCase):
         d = engine.has_table('mytable')
         assert self.successResultOf(d) is True
 
-    def test_more_queries_than_queuepool_slots(self):
+    def test_pooled_connection_reuse(self):
         table = Table('my_pool_table', sqlalchemy.MetaData(),
                       Column('id', Integer, primary_key=True),
                       Column('name', String, nullable=False))
