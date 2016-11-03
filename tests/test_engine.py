@@ -2,6 +2,8 @@ from __future__ import absolute_import, division
 
 import os
 from binascii import hexlify
+from random import Random
+
 
 import sqlalchemy
 from sqlalchemy import (Table, Column, String, Integer)
@@ -116,9 +118,9 @@ class TestEngine(unittest.TestCase):
             pool_size = pool_size()
         if isinstance(engine._engine.pool, sqlalchemy.pool.QueuePool):
             pool_size += engine._engine.pool._max_overflow
+        arbitrary = Random()
         for _ in range(pool_size + 1):
-            from random import Random
-            entry = Random().choice(list(range(3)))
+            entry = arbitrary.choice(list(range(3)))
             d = engine.execute(table.select().where(
                 table.c.id == data[entry]['id']))
 
