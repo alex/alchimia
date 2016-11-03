@@ -108,10 +108,15 @@ class TestEngine(unittest.TestCase):
                 {'id': 2,
                  'name': 'c'}]
         # max_overflow kwarg broken, but defaults to 10
-        engine = create_engine(pool_size=5)
+        engine = create_engine()
         engine.execute(CreateTable(table))
         engine.execute(table.insert(), data)
-        for _ in range(25):
+        pool_size = engine._engine.pool.size
+        if callable(pool_size):
+            pool_size = pool_size()
+        if isinstance(engine._engine.pool, sqlalchemy.pool.QueuePool):
+            pool_size += engine._engine.pool._max_overflow
+        for _ in range(pool_size + 1):
             from random import Random
             entry = Random().choice(list(range(3)))
             d = engine.execute(table.select().where(
