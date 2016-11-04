@@ -4,7 +4,6 @@ import os
 from binascii import hexlify
 
 import sqlalchemy
-from sqlalchemy import (Table, Column, String, Integer)
 from sqlalchemy.engine import RowProxy
 from sqlalchemy.exc import StatementError
 from sqlalchemy.schema import CreateTable
@@ -96,35 +95,6 @@ class TestEngine(unittest.TestCase):
         self.successResultOf(d)
         d = engine.has_table('mytable')
         assert self.successResultOf(d) is True
-
-    def test_pooled_connection_reuse(self):
-        table = Table('my_pool_table', sqlalchemy.MetaData(),
-                      Column('id', Integer, primary_key=True),
-                      Column('name', String, nullable=False))
-        data = [{'id': 0,
-                 'name': 'a'},
-                {'id': 1,
-                 'name': 'b'},
-                {'id': 2,
-                 'name': 'c'}]
-        # max_overflow kwarg broken, but defaults to 10
-        engine = create_engine()
-        engine.execute(CreateTable(table))
-        engine.execute(table.insert(), data)
-        pool_size = engine._engine.pool.size
-        if callable(pool_size):
-            pool_size = pool_size()
-        if isinstance(engine._engine.pool, sqlalchemy.pool.QueuePool):
-            pool_size += engine._engine.pool._max_overflow
-        for i in range(pool_size + 1):
-            entry = data[i % len(data)]
-            d = engine.execute(table.select().where(
-                table.c.id == entry['id']))
-
-            result = self.successResultOf(d)
-            result = result.fetchone()
-            result = self.successResultOf(result)
-            assert result['name'] == entry['name']
 
 
 class TestConnection(unittest.TestCase):
