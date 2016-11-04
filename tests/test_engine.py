@@ -2,8 +2,6 @@ from __future__ import absolute_import, division
 
 import os
 from binascii import hexlify
-from random import Random
-
 
 import sqlalchemy
 from sqlalchemy import (Table, Column, String, Integer)
@@ -118,16 +116,15 @@ class TestEngine(unittest.TestCase):
             pool_size = pool_size()
         if isinstance(engine._engine.pool, sqlalchemy.pool.QueuePool):
             pool_size += engine._engine.pool._max_overflow
-        arbitrary = Random()
-        for _ in range(pool_size + 1):
-            entry = arbitrary.choice(list(range(3)))
+        for i in range(pool_size + 1):
+            entry = data[i % len(data)]
             d = engine.execute(table.select().where(
-                table.c.id == data[entry]['id']))
+                table.c.id == entry['id']))
 
             result = self.successResultOf(d)
             result = result.fetchone()
             result = self.successResultOf(result)
-            assert result['name'] == data[entry]['name']
+            assert result['name'] == entry['name']
 
 
 class TestConnection(unittest.TestCase):
