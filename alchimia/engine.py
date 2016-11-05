@@ -163,7 +163,7 @@ class TwistedResultProxy(object):
         return self._deferrer(self._result_proxy.keys)
 
     def close(self):
-        return self._result_proxy.close()
+        return self._deferrer(self._result_proxy.close)
 
     @property
     def returns_rows(self):

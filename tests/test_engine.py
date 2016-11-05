@@ -253,3 +253,13 @@ class TestResultProxy(unittest.TestCase):
         d = engine.execute(tbl.insert().values())
         result = self.successResultOf(d)
         assert result.inserted_primary_key == [1]
+
+    def test_close(self):
+        engine = self.create_default_table()
+        d = engine.execute("INSERT INTO testtable VALUES (1)")
+        self.successResultOf(d)
+        d = engine.execute("INSERT INTO testtable VALUES (2)")
+        self.successResultOf(d)
+        d = engine.execute("SELECT * FROM testtable")
+        result = self.successResultOf(d)
+        self.successResultOf(result.close())
