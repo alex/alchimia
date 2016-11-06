@@ -113,6 +113,11 @@ you to :doc:`file bugs </contributing>` in those cases.
         Like the SQLAlchemy method of the same name, except returns a
         ``Deferred`` which fires with the scalar value.
 
+    .. method:: close()
+
+	Like the SQLAlchemy method of the same name, it releases the
+	resources used and releases the underlying DB connection.
+
     .. attribute:: returns_rows
 
         Like the SQLAlchemy attribute of the same name.
