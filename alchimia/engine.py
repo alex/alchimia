@@ -41,7 +41,9 @@ def _defer_to_worker(deliver, worker, work, *args, **kwargs):
 
 class TwistedEngine(object):
     def __init__(self, pool, dialect, url, reactor=None,
-                 create_worker=_threaded_worker, **kwargs):
+                 create_worker=_threaded_worker,
+                 _customize_sub_engine=None,
+                 **kwargs):
         if reactor is None:
             raise TypeError("Must provide a reactor")
 
@@ -49,6 +51,8 @@ class TwistedEngine(object):
         self._reactor = reactor
         self._create_worker = create_worker
         self._engine_worker = self._create_worker()
+        if _customize_sub_engine is not None:
+            _customize_sub_engine(self._engine)
 
     def _defer_to_engine(self, f, *a, **k):
         return _defer_to_worker(self._reactor.callFromThread,
@@ -122,6 +126,12 @@ class TwistedConnection(object):
     def begin(self, *args, **kwargs):
         return (self._defer_to_cxn(self._connection.begin, *args, **kwargs)
                 .addCallback(lambda txn: TwistedTransaction(txn, self)))
+
+    def begin_nested(self, *args, **kwargs):
+        return (
+            self._defer_to_cxn(self._connection.begin_nested, *args, **kwargs)
+            .addCallback(lambda txn: TwistedTransaction(txn, self))
+        )
 
     def in_transaction(self):
         return self._connection.in_transaction()
