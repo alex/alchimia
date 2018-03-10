@@ -136,7 +136,7 @@ class TestConnection(unittest.TestCase):
         self.successResultOf(transaction.close())
         assert not conn.in_transaction()
 
-    def test_nested_transaction(self):
+    def test_repeated_begin(self):
         conn = self.get_connection()
         assert not conn.in_transaction()
 
@@ -149,6 +149,19 @@ class TestConnection(unittest.TestCase):
         assert conn.in_transaction()
         self.successResultOf(trx1.close())
         assert not conn.in_transaction()
+
+    def test_savepoints(self):
+        conn = self.get_connection()
+        assert not conn.in_transaction()
+        self.successResultOf(conn.execute(
+            "create table effects (which integer)"
+        ))
+        txn = self.successResultOf(conn.begin())
+        self.successResultOf(conn.execute("insert into effects values (1)"))
+        save = self.successResultOf(conn.begin_nested())
+        self.successResultOf(conn.execute("insert into effects values (2)"))
+        self.successResultOf(save.rollback())
+        self.successResultOf(txn.commit())
 
     def test_transaction_commit(self):
         metadata = sqlalchemy.MetaData()

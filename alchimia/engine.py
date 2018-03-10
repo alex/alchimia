@@ -123,6 +123,12 @@ class TwistedConnection(object):
         return (self._defer_to_cxn(self._connection.begin, *args, **kwargs)
                 .addCallback(lambda txn: TwistedTransaction(txn, self)))
 
+    def begin_nested(self, *args, **kwargs):
+        return (
+            self._defer_to_cxn(self._connection.begin_nested, *args, **kwargs)
+            .addCallback(lambda txn: TwistedTransaction(txn, self))
+        )
+
     def in_transaction(self):
         return self._connection.in_transaction()
 
