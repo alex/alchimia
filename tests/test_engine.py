@@ -40,7 +40,7 @@ def create_engine(**kwargs):
                 # emit our own BEGIN
                 conn.execute("BEGIN")
 
-        kwargs['customize_sub_engine'] = actually_transactional_sqlite
+        kwargs['_customize_sub_engine'] = actually_transactional_sqlite
 
     engine = sqlalchemy.create_engine(
         TEST_DB_URL, strategy=TWISTED_STRATEGY,
@@ -180,6 +180,13 @@ class TestConnection(unittest.TestCase):
         save = self.successResultOf(conn.begin_nested())
         self.successResultOf(conn.execute("insert into effects values (2)"))
         self.successResultOf(save.rollback())
+        self.assertEqual(
+            [(1,)],
+            self.successResultOf(
+                self.successResultOf(conn.execute("select * from effects"))
+                .fetchall()
+            )
+        )
         self.successResultOf(txn.commit())
 
     def test_transaction_commit(self):
