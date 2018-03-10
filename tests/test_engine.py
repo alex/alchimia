@@ -5,6 +5,7 @@ from binascii import hexlify
 
 import sqlalchemy
 from sqlalchemy.engine import RowProxy
+from sqlalchemy.event import listens_for
 from sqlalchemy.exc import StatementError
 from sqlalchemy.schema import CreateTable
 
@@ -23,6 +24,24 @@ def create_engine(**kwargs):
         TEST_DB_URL = os.environ['TEST_DB_URL']
     else:
         TEST_DB_URL = 'sqlite://'
+
+        def actually_transactional_sqlite(sub_engine):
+            # per
+            # http://docs.sqlalchemy.org/en/latest/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl,
+            # necessary to test savepoints in SQLite.
+            @listens_for(sub_engine, "connect")
+            def do_connect(dbapi_connection, connection_record):
+                # disable pysqlite's emitting of the BEGIN statement entirely.
+                # also stops it from emitting COMMIT before any DDL.
+                dbapi_connection.isolation_level = None
+
+            @listens_for(sub_engine, "begin")
+            def do_begin(conn):
+                # emit our own BEGIN
+                conn.execute("BEGIN")
+
+        kwargs['customize_sub_engine'] = actually_transactional_sqlite
+
     engine = sqlalchemy.create_engine(
         TEST_DB_URL, strategy=TWISTED_STRATEGY,
         reactor=FakeThreadedReactor(), create_worker=ImmediateWorker,
@@ -47,7 +66,7 @@ class TestEngineCreation(unittest.TestCase):
         engine = sqlalchemy.create_engine(
             "sqlite://",
             strategy=TWISTED_STRATEGY,
-            reactor=FakeThreadedReactor()
+            reactor=FakeThreadedReactor(),
         )
         assert isinstance(engine, TwistedEngine)
 
