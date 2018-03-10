@@ -1,14 +1,19 @@
 sudo: false
 
 language: python
-python: 2.7
-env:
-    - TOX_ENV=py27
-    - TOX_ENV=py33
-    - TOX_ENV=py34
-    - TOX_ENV=pypy
-    - TOX_ENV=docs
-    - TOX_ENV=pep8
+
+matrix:
+  include:
+    - python: 2.7
+      env: TOX_ENV=py27
+    - python: 3.4
+      env: TOX_ENV=py34
+    - python: pypy
+      env: TOX_ENV=pypy
+    - python: 2.7
+      env: TOX_ENV=docs
+    - python: 2.7
+      env: TOX_ENV=pep8
 
 install:
     - pip install tox
