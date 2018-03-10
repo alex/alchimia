@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division
 
+import os
+from binascii import hexlify
+
 import sqlalchemy
 from sqlalchemy.engine import RowProxy
 from sqlalchemy.exc import StatementError
@@ -15,11 +18,28 @@ from alchimia.engine import (
 from .doubles import FakeThreadedReactor, ImmediateWorker
 
 
-def create_engine():
-    return sqlalchemy.create_engine(
-        "sqlite://", strategy=TWISTED_STRATEGY, reactor=FakeThreadedReactor(),
-        create_worker=ImmediateWorker,
-    )
+def create_engine(**kwargs):
+    if 'TEST_DB_URL' in os.environ:
+        TEST_DB_URL = os.environ['TEST_DB_URL']
+    else:
+        TEST_DB_URL = 'sqlite://'
+    engine = sqlalchemy.create_engine(
+        TEST_DB_URL, strategy=TWISTED_STRATEGY,
+        reactor=FakeThreadedReactor(), create_worker=ImmediateWorker,
+        **kwargs)
+    if TEST_DB_URL.startswith("postgresql"):
+        tmpdb_name = "testdb"+hexlify(os.urandom(16)).decode()
+        tmpdb_url = '/'.join(
+            TEST_DB_URL.split('/')[:-1] + [tmpdb_name])
+        conn = engine.connect().result
+        conn.execute("commit")
+        conn.execute("CREATE DATABASE {}".format(tmpdb_name))
+        conn.close()
+        engine = sqlalchemy.create_engine(
+            tmpdb_url, strategy=TWISTED_STRATEGY,
+            reactor=FakeThreadedReactor(), create_worker=ImmediateWorker,
+            **kwargs)
+    return engine
 
 
 class TestEngineCreation(unittest.TestCase):
@@ -249,7 +269,9 @@ class TestResultProxy(unittest.TestCase):
             'testtable', metadata,
             sqlalchemy.Column("id", sqlalchemy.Integer(), primary_key=True),
         )
-        engine = self.create_default_table()
+        engine = create_engine()
+        d = engine.execute(CreateTable(tbl))
+        self.successResultOf(d)
         d = engine.execute(tbl.insert().values())
         result = self.successResultOf(d)
         assert result.inserted_primary_key == [1]

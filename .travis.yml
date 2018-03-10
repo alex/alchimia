@@ -2,14 +2,28 @@ sudo: false
 
 language: python
 
+services:
+    - postgresql
+
+before_script:
+    - psql -c 'create database travis_ci_test;' -U postgres
+
 matrix:
   include:
     - python: 2.7
       env: TOX_ENV=py27
+    - python: 2.7
+      env: TOX_ENV=py27-psycopg2cffi
     - python: 3.4
       env: TOX_ENV=py34
+    - python: 3.5
+      env: TOX_ENV=py35
+    - python: 3.5
+      env: TOX_ENV=py35-psycopg2cffi
     - python: pypy
       env: TOX_ENV=pypy
+    - python: pypy
+      env: TOX_ENV=pypy-psycopg2cffi
     - python: 2.7
       env: TOX_ENV=docs
     - python: 2.7
