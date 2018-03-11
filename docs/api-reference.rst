@@ -12,8 +12,8 @@ you to :doc:`file bugs </contributing>` in those cases.
     Mostly like :class:`sqlalchemy.engine.Engine` except some of the methods
     return ``Deferreds``.
 
-    .. method:: __init__(pool, dialect, url, reactor=None,
-                create_worker=threaded_worker, customize_sub_engine=None)
+    .. method:: __init__(pool, dialect, url, reactor=..., create_worker=...,
+                         customize_sub_engine=...)
 
        ``TwistedEngine`` is normally created via ``create_engine(...,
        reactor=reactor, strategy=TWISTED_STRATEGY)`` rather than called
