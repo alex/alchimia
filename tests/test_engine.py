@@ -40,7 +40,7 @@ def create_engine(**kwargs):
                 # emit our own BEGIN
                 conn.execute("BEGIN")
 
-        kwargs['_customize_sub_engine'] = actually_transactional_sqlite
+        kwargs.update(customize_sub_engine=actually_transactional_sqlite)
 
     engine = sqlalchemy.create_engine(
         TEST_DB_URL, strategy=TWISTED_STRATEGY,
