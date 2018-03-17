@@ -24,7 +24,7 @@ matrix:
       env: TOX_ENV=pypy
     - python: pypy
       env: TOX_ENV=pypy-psycopg2cffi
-    - python: 2.7
+    - python: 3.6
       env: TOX_ENV=docs
     - python: 2.7
       env: TOX_ENV=pep8
