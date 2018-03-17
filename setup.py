@@ -15,6 +15,10 @@ import setuptools
 
 
 setuptools.setup(
-    setup_requires=['pbr'],
-    pbr=True
+    name="alchimia",
+    version='0.7.0',
+    summary="(SQLAlchemy - ORM) + Twisted = win",
+    description_file="README.rst",
+    author="Alex Gaynor and David Reid",
+    home_page="https://github.com/alex/alchimia",
 )
