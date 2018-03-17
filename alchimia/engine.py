@@ -42,7 +42,6 @@ def _defer_to_worker(deliver, worker, work, *args, **kwargs):
 class TwistedEngine(object):
     def __init__(self, pool, dialect, url, reactor=None,
                  create_worker=_threaded_worker,
-                 _customize_sub_engine=None,
                  **kwargs):
         if reactor is None:
             raise TypeError("Must provide a reactor")
@@ -51,8 +50,18 @@ class TwistedEngine(object):
         self._reactor = reactor
         self._create_worker = create_worker
         self._engine_worker = self._create_worker()
-        if _customize_sub_engine is not None:
-            _customize_sub_engine(self._engine)
+
+    @classmethod
+    def from_sqlalchemy_engine(cls, reactor, engine,
+                               create_worker=_threaded_worker):
+        # Leaving the existing __init__ in place for compatibility reasons,
+        # this is a completely alternate constructor.
+        self = cls.__new__(cls)
+        self._reactor = reactor
+        self._engine = engine
+        self._create_worker = create_worker
+        self._engine_worker = create_worker()
+        return self
 
     def _defer_to_engine(self, f, *a, **k):
         return _defer_to_worker(self._reactor.callFromThread,
