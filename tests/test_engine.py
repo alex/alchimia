@@ -11,7 +11,7 @@ from sqlalchemy.schema import CreateTable
 
 from twisted.trial import unittest
 
-from alchimia import TWISTED_STRATEGY
+from alchimia import TWISTED_STRATEGY, wrap_engine
 from alchimia.engine import (
     TwistedEngine, TwistedConnection, TwistedTransaction,
 )
@@ -25,22 +25,23 @@ def create_engine(**kwargs):
     else:
         TEST_DB_URL = 'sqlite://'
 
-        def actually_transactional_sqlite(sub_engine):
-            # per
-            # http://docs.sqlalchemy.org/en/latest/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl,
-            # necessary to test savepoints in SQLite.
-            @listens_for(sub_engine, "connect")
-            def do_connect(dbapi_connection, connection_record):
-                # disable pysqlite's emitting of the BEGIN statement entirely.
-                # also stops it from emitting COMMIT before any DDL.
-                dbapi_connection.isolation_level = None
+    if TEST_DB_URL.startswith("sqlite:"):
+        # per
+        # http://docs.sqlalchemy.org/en/latest/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl,
+        # necessary to test savepoints in SQLite.
 
-            @listens_for(sub_engine, "begin")
-            def do_begin(conn):
-                # emit our own BEGIN
-                conn.execute("BEGIN")
+        sub_engine = sqlalchemy.create_engine(TEST_DB_URL, **kwargs)
+        @listens_for(sub_engine, "connect")
+        def do_connect(dbapi_connection, connection_record):
+            # disable pysqlite's emitting of the BEGIN statement entirely.
+            # also stops it from emitting COMMIT before any DDL.
+            dbapi_connection.isolation_level = None
 
-        kwargs.update(customize_sub_engine=actually_transactional_sqlite)
+        @listens_for(sub_engine, "begin")
+        def do_begin(conn):
+            # emit our own BEGIN
+            conn.execute("BEGIN")
+        return wrap_engine(FakeThreadedReactor(), sub_engine, ImmediateWorker)
 
     engine = sqlalchemy.create_engine(
         TEST_DB_URL, strategy=TWISTED_STRATEGY,
@@ -62,13 +63,18 @@ def create_engine(**kwargs):
 
 
 class TestEngineCreation(unittest.TestCase):
-    def test_simple_create_engine(self):
+    def test_simple_create_with_strategy(self):
         engine = sqlalchemy.create_engine(
             "sqlite://",
             strategy=TWISTED_STRATEGY,
             reactor=FakeThreadedReactor(),
         )
         assert isinstance(engine, TwistedEngine)
+
+    def test_wrap_engine(self):
+        sub_engine = sqlalchemy.create_engine("sqlite://")
+        twisted_engine = wrap_engine(FakeThreadedReactor(), sub_engine)
+        assert isinstance(twisted_engine, TwistedEngine)
 
 
 class TestEngine(unittest.TestCase):

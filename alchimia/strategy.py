@@ -17,3 +17,5 @@ class TwistedEngineStrategy(DefaultEngineStrategy):
 
     name = TWISTED_STRATEGY
     engine_cls = TwistedEngine
+
+TwistedEngineStrategy()
