@@ -9,7 +9,7 @@ Getting started
 
 .. code:: python
 
-    from alchimia import TWISTED_STRATEGY
+    from alchimia import wrap_engine
 
     from sqlalchemy import (
         create_engine, MetaData, Table, Column, Integer, String
@@ -22,9 +22,7 @@ Getting started
 
     @inlineCallbacks
     def main(reactor):
-        engine = create_engine(
-            "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
-        )
+        engine = wrap_engine(reactor, create_engine("sqlite://"))
 
         metadata = MetaData()
         users = Table("users", metadata,
