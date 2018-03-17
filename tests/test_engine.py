@@ -31,6 +31,7 @@ def create_engine(**kwargs):
         # necessary to test savepoints in SQLite.
 
         sub_engine = sqlalchemy.create_engine(TEST_DB_URL, **kwargs)
+
         @listens_for(sub_engine, "connect")
         def do_connect(dbapi_connection, connection_record):
             # disable pysqlite's emitting of the BEGIN statement entirely.
