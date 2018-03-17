@@ -44,7 +44,7 @@ Getting started
         d_users = yield result.fetchall()
         # Print out the users
         for user in d_users:
-            print "Username: %s" % user[users.c.name]
+            print("Username: %s" % user[users.c.name])
 
     if __name__ == "__main__":
         react(main, [])
