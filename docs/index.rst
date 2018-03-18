@@ -9,7 +9,7 @@ Getting started
 
 .. code-block:: python
 
-    from alchimia import TWISTED_STRATEGY
+    from alchimia import wrap_engine
 
     from sqlalchemy import (
         create_engine, MetaData, Table, Column, Integer, String
@@ -22,9 +22,7 @@ Getting started
 
     @inlineCallbacks
     def main(reactor):
-        engine = create_engine(
-            "sqlite://", reactor=reactor, strategy=TWISTED_STRATEGY
-        )
+        engine = wrap_engine(reactor, create_engine("sqlite://"))
 
         metadata = MetaData()
         users = Table("users", metadata,
@@ -46,11 +44,10 @@ Getting started
         d_users = yield result.fetchall()
         # Print out the users
         for user in d_users:
-            print "Username: %s" % user[users.c.name]
-
+            print("Username: %s" % user[users.c.name])
 	# Queries that return results should be explicitly closed to
 	# release the connection
-	result.close()
+        result.close()
 
     if __name__ == "__main__":
         react(main, [])

@@ -45,6 +45,9 @@ Getting started
         # Print out the users
         for user in d_users:
             print("Username: %s" % user[users.c.name])
+	# Queries that return results should be explicitly closed to
+	# release the connection
+        result.close()
 
     if __name__ == "__main__":
         react(main, [])
